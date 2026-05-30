@@ -64,8 +64,14 @@ def rede():
 @app.get("/boot-time")
 def tempo():
 
-    tempo = psutil.boot_time()
+    boot_time = psutil.boot_time()
 
-    return{
-        "O sistema foi ligado em": datetime.datetime.fromtimestamp(tempo).strftime("%Y-%m-%d %H:%M:%S")
+    agora = datetime.datetime.now()
+
+    ligado_em = datetime.datetime.fromtimestamp(boot_time)
+
+    difereca = agora - ligado_em
+
+    return {
+        "uptime": str(difereca).split(".")[0]
     }

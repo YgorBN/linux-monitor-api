@@ -2,9 +2,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import psutil
 import datetime
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 
 app = FastAPI()
+
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR / "frontend"
+
+app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,7 +25,7 @@ app.add_middleware(
 
 @app.get("/")
 def home():
-    return{"mensagem": "API online"}
+    return FileResponse(FRONTEND_DIR / "index.html")
 
 @app.get("/cpu")
 def cpu():
@@ -75,7 +83,7 @@ def tempo():
     segundos = diferenca.seconds
 
     horas = segundos // 3600
-    minutos = (segundos % 3600) // 3600
+    minutos = (segundos % 3600) // 60
     segundos = segundos % 60
     
 
@@ -98,11 +106,11 @@ def processos():
             "memoria_percent": round(info["memory_percent"], 2)
         })
 
-        listas_processos = sorted(
-            listas_processos,
-            key=lambda processo: processo["memoria_percent"],
-            reverse=True
-        )
+    listas_processos = sorted(
+        listas_processos,
+        key=lambda processo: processo["memoria_percent"],
+        reverse=True
+    )
     
     return {
         "processos": listas_processos[:5]

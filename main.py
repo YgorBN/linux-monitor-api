@@ -67,11 +67,43 @@ def tempo():
     boot_time = psutil.boot_time()
 
     agora = datetime.datetime.now()
-
     ligado_em = datetime.datetime.fromtimestamp(boot_time)
 
-    difereca = agora - ligado_em
+    diferenca = agora - ligado_em
+
+    dias = diferenca.days
+    segundos = diferenca.seconds
+
+    horas = segundos // 3600
+    minutos = (segundos % 3600) // 3600
+    segundos = segundos % 60
+    
 
     return {
-        "uptime": str(difereca).split(".")[0]
+        "uptime": f"{dias} dias(s) {horas}h {minutos}min {segundos}s"
+    }
+
+@app.get("/processos")
+def processos():
+    
+    listas_processos = []
+
+    for processo in psutil.process_iter(["pid", "name", "memory_percent"]):
+
+        info = processo.info
+
+        listas_processos.append({
+            "pid": info["pid"],
+            "nome": info["name"],
+            "memoria_percent": round(info["memory_percent"], 2)
+        })
+
+        listas_processos = sorted(
+            listas_processos,
+            key=lambda processo: processo["memoria_percent"],
+            reverse=True
+        )
+    
+    return {
+        "processos": listas_processos[:5]
     }
